@@ -18,7 +18,8 @@ public class FileHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ByteBuf buffer = ctx.alloc().buffer(4);
-
+        ctx.write(msg);
+        ctx.flush();
     }
 
 
