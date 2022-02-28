@@ -1,11 +1,12 @@
 package com.bafcloud.cloud.Server;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class FileHandler extends SimpleChannelInboundHandler<String> {
+public class FileHandler extends ChannelInboundHandlerAdapter {
 
 
     @Override
@@ -13,12 +14,13 @@ public class FileHandler extends SimpleChannelInboundHandler<String> {
         System.out.println("Client connected: " + ctx.channel().remoteAddress());
     }
 
-    @Override
-    protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
-        System.out.println("Message from client: " + msg);
 
-        ctx.writeAndFlush(msg);
+    @Override
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        ByteBuf buffer = ctx.alloc().buffer(4);
+
     }
+
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {

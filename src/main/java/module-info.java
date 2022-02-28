@@ -17,6 +17,7 @@ module com.bafcloud.cloud {
     requires io.netty.codec;
     requires lombok;
     requires org.slf4j;
+    requires io.netty.buffer;
 
 
     opens com.bafcloud.cloud to javafx.fxml;
