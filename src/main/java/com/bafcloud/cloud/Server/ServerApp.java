@@ -14,6 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ServerApp {
 
+    private static final int PORT = 8189;
+    private static final String PATH = "test";
+
     public ServerApp() {
         EventLoopGroup auth = new NioEventLoopGroup(1);
         EventLoopGroup workers = new NioEventLoopGroup();
@@ -27,10 +30,10 @@ public class ServerApp {
                             ch.pipeline().addLast(
                                     new StringDecoder(),
                                     new StringEncoder(),
-                                    new FileHandler());
+                                    new MainHandler(PATH));
                         }
                     });
-            ChannelFuture future = bootstrap.bind(8189).sync();
+            ChannelFuture future = bootstrap.bind(PORT).sync();
             System.out.println("Server started");
             future.channel().closeFuture().sync();
             System.out.println("Server finished");

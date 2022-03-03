@@ -1,4 +1,4 @@
-package com.bafcloud.cloud;
+package com.bafcloud.cloud.Client;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
