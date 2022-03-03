@@ -21,6 +21,7 @@ module com.bafcloud.cloud {
 
 
     opens com.bafcloud.cloud to javafx.fxml;
-    exports com.bafcloud.cloud;
+    exports com.bafcloud.cloud.Client;
+    opens com.bafcloud.cloud.Client to javafx.fxml;
 
 }
