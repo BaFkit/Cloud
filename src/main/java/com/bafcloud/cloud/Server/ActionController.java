@@ -1,10 +1,14 @@
 package com.bafcloud.cloud.Server;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 public class ActionController {
 
     private final String path;
+
+    File download;
 
     public ActionController(String path){
         this.path = path;
@@ -39,4 +43,15 @@ public class ActionController {
         if (sb.length() < 1) sb.append("Empty");
         return sb.toString();
     }
+
+    public byte[] getBytes() {
+        byte[] bytes = new byte[512];
+        try {
+            bytes = Files.readAllBytes(download.toPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bytes;
+    }
+
 }

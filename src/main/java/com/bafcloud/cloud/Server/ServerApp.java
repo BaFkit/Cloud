@@ -7,15 +7,13 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.codec.string.StringEncoder;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ServerApp {
 
     private static final int PORT = 8189;
-    private static final String PATH = "test";
+    private static final String PATH = "sd";
 
     public ServerApp() {
         EventLoopGroup auth = new NioEventLoopGroup(1);
@@ -28,8 +26,6 @@ public class ServerApp {
                         @Override
                         protected void initChannel(SocketChannel ch) {
                             ch.pipeline().addLast(
-                                    new StringDecoder(),
-                                    new StringEncoder(),
                                     new MainHandler(PATH));
                         }
                     });
