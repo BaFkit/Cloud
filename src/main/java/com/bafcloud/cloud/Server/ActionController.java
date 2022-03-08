@@ -1,39 +1,39 @@
 package com.bafcloud.cloud.Server;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
+import java.io.*;
+
 
 public class ActionController {
 
-    private final String path;
+    private final String rootClient;
+    private String currentDir;
+    private String fileName;
+    private FileOutputStream fos;
 
-    File download;
-
-    public ActionController(String path){
-        this.path = path;
+    public ActionController(String rootClient){
+        this.rootClient = rootClient;
 
     }
 
     public void reg() {
             }
 
-    public String mkdir(String path) {
+    public String mkdir(String[] parts) {
         System.out.println("Принята комманда /mkdir");
-        File folder = new File(path);
+        File folder = new File(rootClient + File.separator + parts[1] + File.separator + parts[2]);
         if (!folder.exists()) {
             folder.mkdir();
-            System.out.println("dirSuccess");
-            return "dirSuccess";
+            System.out.println("Success");
+            return "Success";
         } else {
             System.out.println("unSuccess");
             return "unSuccess";
         }
     }
 
-    public String list() {
+    public String list(String currentPath) {
         System.out.println("Принята комманда /list");
-        File file = new File(path);
+        File file = new File(rootClient + File.separator + currentPath);
         File[] files = file.listFiles();
         StringBuilder sb = new StringBuilder();
         assert files != null;
@@ -44,14 +44,41 @@ public class ActionController {
         return sb.toString();
     }
 
-    public byte[] getBytes() {
-        byte[] bytes = new byte[512];
+    public String upload(String[] parts) {
+        currentDir = parts[1];
+        fileName = parts[2];
         try {
-            bytes = Files.readAllBytes(download.toPath());
+            File file = new File(rootClient + File.separator + currentDir + File.separator + fileName);
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            fos = new FileOutputStream(file);
+            return "ready";
         } catch (IOException e) {
             e.printStackTrace();
+            return "unSuccess";
         }
-        return bytes;
     }
+
+    public String uploadFile(byte[] bytes) {
+        try {
+            fos.write(bytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "unSuccess";
+        }
+        return "Success";
+    }
+
+
+//    public byte[] getBytes() {
+//        byte[] bytes = new byte[512];
+//        try {
+//            bytes = Files.readAllBytes(download.toPath());
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return bytes;
+//    }
 
 }
