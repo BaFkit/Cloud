@@ -2,7 +2,6 @@ package com.bafcloud.cloud.Server;
 
 import java.io.*;
 
-
 public class ActionController {
 
     private final String rootClient;
@@ -49,9 +48,10 @@ public class ActionController {
         fileName = parts[2];
         try {
             File file = new File(rootClient + File.separator + currentDir + File.separator + fileName);
-            if (!file.exists()) {
-                file.createNewFile();
+            if (file.exists()) {
+                file = new File(rootClient + File.separator + currentDir + File.separator + "(copy)" +fileName);
             }
+            file.createNewFile();
             fos = new FileOutputStream(file);
             return "ready";
         } catch (IOException e) {

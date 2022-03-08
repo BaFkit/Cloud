@@ -19,6 +19,7 @@ public class ServerApp {
     public ServerApp() {
         EventLoopGroup auth = new NioEventLoopGroup(1);
         EventLoopGroup workers = new NioEventLoopGroup();
+        MainHandler mainHandler = new MainHandler(PATH);
         try {
             ServerBootstrap bootstrap = new ServerBootstrap();
             bootstrap.group(auth, workers)
@@ -27,7 +28,8 @@ public class ServerApp {
                         @Override
                         protected void initChannel(SocketChannel ch) {
                             ch.pipeline().addLast(
-                                    new MainHandler(PATH));
+                                    mainHandler
+                            );
                         }
                     });
             ChannelFuture future = bootstrap.bind(PORT).sync();
