@@ -7,8 +7,8 @@ commands:
  - command mkdir
  - command upload
 
- - authorization;
- - database connection sql_lite;
- 
+actual - authorization;
+
+actual - database connection sql_lite;
  
 actual branch - Master
