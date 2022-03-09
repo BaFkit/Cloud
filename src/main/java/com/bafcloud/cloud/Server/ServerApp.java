@@ -1,5 +1,7 @@
 package com.bafcloud.cloud.Server;
 
+import com.bafcloud.cloud.Server.Services.AuthorizationService;
+import com.bafcloud.cloud.Server.Services.BaseAuthService;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -13,11 +15,14 @@ import lombok.extern.slf4j.Slf4j;
 public class ServerApp {
 
     private static final int PORT = 8189;
-    private static final String PATH = "sd";
+    private static final String root = "sd";
 
     public ServerApp() {
         EventLoopGroup auth = new NioEventLoopGroup(1);
         EventLoopGroup workers = new NioEventLoopGroup();
+        AuthorizationService authorizationService = new BaseAuthService();
+        authorizationService.start();
+        MainHandler mainHandler = new MainHandler(authorizationService, root);
         try {
             ServerBootstrap bootstrap = new ServerBootstrap();
             bootstrap.group(auth, workers)
@@ -26,7 +31,8 @@ public class ServerApp {
                         @Override
                         protected void initChannel(SocketChannel ch) {
                             ch.pipeline().addLast(
-                                    new MainHandler(PATH));
+                                    mainHandler
+                            );
                         }
                     });
             ChannelFuture future = bootstrap.bind(PORT).sync();
@@ -36,6 +42,7 @@ public class ServerApp {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {
+            authorizationService.stop();
             auth.shutdownGracefully();
             workers.shutdownGracefully();
         }

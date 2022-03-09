@@ -1,39 +1,55 @@
 package com.bafcloud.cloud.Server;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
+import com.bafcloud.cloud.Server.Services.AuthorizationService;
+
+import java.io.*;
 
 public class ActionController {
 
-    private final String path;
+    private final String root;
+    private String rootClient;
+    private long spaceClient;
+    private String currentDir;
+    private String fileName;
 
-    File download;
+    private final AuthorizationService authorizationService;
+    private FileOutputStream fos;
 
-    public ActionController(String path){
-        this.path = path;
-
+    public ActionController(AuthorizationService authorizationService, String root) {
+        this.authorizationService = authorizationService;
+        this.root = root;
     }
 
-    public void reg() {
+    public String authorization(String[] parts) {
+        spaceClient = authorizationService.checkUserVerification(parts[1], parts[2]);
+        if (spaceClient > -1) {
+            rootClient = authorizationService.getRootClient(parts[1], parts[2]);
+            if (rootClient.equals("notExist")) {
+                File folder = new File(root + File.separator + parts[1]);
+                folder.mkdir();
+                rootClient = parts[1];
             }
+            return "Success";
+        }
+        return "unSuccess";
+    }
 
-    public String mkdir(String path) {
+    public String mkdir(String[] parts) {
         System.out.println("Принята комманда /mkdir");
-        File folder = new File(path);
+        File folder = new File(rootClient + File.separator + parts[1] + File.separator + parts[2]);
         if (!folder.exists()) {
             folder.mkdir();
-            System.out.println("dirSuccess");
-            return "dirSuccess";
+            System.out.println("Success");
+            return "Success";
         } else {
             System.out.println("unSuccess");
             return "unSuccess";
         }
     }
 
-    public String list() {
+    public String list(String currentPath) {
         System.out.println("Принята комманда /list");
-        File file = new File(path);
+        File file = new File(rootClient + File.separator + currentPath);
         File[] files = file.listFiles();
         StringBuilder sb = new StringBuilder();
         assert files != null;
@@ -44,14 +60,38 @@ public class ActionController {
         return sb.toString();
     }
 
-    public byte[] getBytes() {
-        byte[] bytes = new byte[512];
+    public String upload(String[] parts) {
+        currentDir = parts[1];
+        fileName = parts[2];
         try {
-            bytes = Files.readAllBytes(download.toPath());
+            File file = new File(rootClient + File.separator + currentDir + File.separator + fileName);
+            if (file.exists()) {
+                file = new File(rootClient + File.separator + currentDir + File.separator + "(copy)" + fileName);
+            }
+            file.createNewFile();
+            fos = new FileOutputStream(file);
+            return "ready";
         } catch (IOException e) {
             e.printStackTrace();
+            return "unSuccess";
         }
-        return bytes;
     }
 
+    public String checkCapacity(String size) {
+        if (spaceClient > Long.parseLong(size)) {
+            return "waitingGet";
+        }
+        return "exceeded";
+    }
+
+    public String uploadFile(byte[] bytes) {
+        try {
+            fos.write(bytes);
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "unSuccess";
+        }
+        return "Success";
+    }
 }

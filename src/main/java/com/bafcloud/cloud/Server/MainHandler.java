@@ -1,5 +1,6 @@
 package com.bafcloud.cloud.Server;
 
+import com.bafcloud.cloud.Server.Services.AuthorizationService;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -15,15 +16,17 @@ import java.util.List;
 public class MainHandler extends ChannelInboundHandlerAdapter {
 
     private static final List<Channel> channels = new ArrayList<>();
-    private final String path;
+    private final String root;
 
     private final ActionController actionController;
-    private boolean downloadFlag = false;
+    private long uploadFileSize;
+    private long capacityClient; //rework
     private boolean uploadFlag = false;
+    private String msgSend;
 
-    public MainHandler(String path) {
-        actionController = new ActionController(path);
-        this.path = path;
+    public MainHandler(AuthorizationService authorizationService, String root) {
+        actionController = new ActionController(authorizationService, root);
+        this.root = root;
     }
 
     @Override
@@ -38,41 +41,54 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
 
         ByteBuf byteBuf = (ByteBuf) msg;
 
-        if (!uploadFlag) {
-            byte[] bytes = new byte[byteBuf.capacity()];
-            for (int i = 0; i < byteBuf.capacity(); i++) {
-                bytes[i] = byteBuf.getByte(i);
-            }
+        byte[] bytes = new byte[byteBuf.capacity()];
+        for (int i = 0; i < byteBuf.capacity(); i++) {
+            bytes[i] = byteBuf.getByte(i);
+        }
 
+        if (!uploadFlag) {
             String str = new String(bytes, 0, bytes.length, StandardCharsets.UTF_8);
             String[] parts = str.trim().split("\\s+");
             String cmd = parts[0];
 
             switch (cmd) {
-                case ("/list"):
-                    str = actionController.list();
+                case ("auth"):
+                    msgSend = actionController.authorization(parts);
                     break;
-                case ("/mkdir"):
-                    str = actionController.mkdir(path);
+                case ("list"):
+                    msgSend = actionController.list(parts[1]);
+                    break;
+                case ("mkdir"):
+                    msgSend = actionController.mkdir(parts);
+                    break;
+                case ("upload"):
+                    msgSend = actionController.upload(parts);
+                    break;
+                case ("waitingSend"):
+                    uploadFlag = true;
+                    msgSend = actionController.checkCapacity(parts[1]);
                     break;
                 default:
+                    msgSend = "unknown";
                     System.out.println("unknown command");
                     break;
             }
-
-            if (downloadFlag) {
-                byte[] bytes1 = actionController.getBytes();
-                byteBuf = Unpooled.copiedBuffer(bytes1);
-                downloadFlag = false;
-                ctx.writeAndFlush(byteBuf);
-                byteBuf.clear();
-                return;
-            }
-
-            msg = Unpooled.copiedBuffer(str.getBytes(StandardCharsets.UTF_8));
+            msg = Unpooled.copiedBuffer(msgSend.getBytes(StandardCharsets.UTF_8));
             ctx.writeAndFlush(msg);
+            byteBuf.clear();
+            return;
         }
-        byteBuf.clear();
+        if (uploadFlag) {
+            System.out.println("Зашли в закрузку файла");
+            msgSend = actionController.uploadFile(bytes);
+            uploadFlag = false;
+            System.out.println("Вышли из закрузки файла");
+            msg = Unpooled.copiedBuffer(msgSend.getBytes(StandardCharsets.UTF_8));
+            ctx.writeAndFlush(msg);
+            byteBuf.clear();
+            return;
+        }
+
     }
 
 
