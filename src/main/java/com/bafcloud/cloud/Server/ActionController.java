@@ -1,21 +1,38 @@
 package com.bafcloud.cloud.Server;
 
+import com.bafcloud.cloud.Server.Services.AuthorizationService;
+
 import java.io.*;
 
 public class ActionController {
 
-    private final String rootClient;
+    private final String root;
+    private String rootClient;
+    private long spaceClient;
     private String currentDir;
     private String fileName;
+
+    private final AuthorizationService authorizationService;
     private FileOutputStream fos;
 
-    public ActionController(String rootClient){
-        this.rootClient = rootClient;
-
+    public ActionController(AuthorizationService authorizationService, String root) {
+        this.authorizationService = authorizationService;
+        this.root = root;
     }
 
-    public void reg() {
+    public String authorization(String[] parts) {
+        spaceClient = authorizationService.checkUserVerification(parts[1], parts[2]);
+        if (spaceClient > -1) {
+            rootClient = authorizationService.getRootClient(parts[1], parts[2]);
+            if (rootClient.equals("notExist")) {
+                File folder = new File(root + File.separator + parts[1]);
+                folder.mkdir();
+                rootClient = parts[1];
             }
+            return "Success";
+        }
+        return "unSuccess";
+    }
 
     public String mkdir(String[] parts) {
         System.out.println("Принята комманда /mkdir");
@@ -49,7 +66,7 @@ public class ActionController {
         try {
             File file = new File(rootClient + File.separator + currentDir + File.separator + fileName);
             if (file.exists()) {
-                file = new File(rootClient + File.separator + currentDir + File.separator + "(copy)" +fileName);
+                file = new File(rootClient + File.separator + currentDir + File.separator + "(copy)" + fileName);
             }
             file.createNewFile();
             fos = new FileOutputStream(file);
@@ -60,25 +77,21 @@ public class ActionController {
         }
     }
 
+    public String checkCapacity(String size) {
+        if (spaceClient > Long.parseLong(size)) {
+            return "waitingGet";
+        }
+        return "exceeded";
+    }
+
     public String uploadFile(byte[] bytes) {
         try {
             fos.write(bytes);
+            fos.close();
         } catch (IOException e) {
             e.printStackTrace();
             return "unSuccess";
         }
         return "Success";
     }
-
-
-//    public byte[] getBytes() {
-//        byte[] bytes = new byte[512];
-//        try {
-//            bytes = Files.readAllBytes(download.toPath());
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return bytes;
-//    }
-
 }

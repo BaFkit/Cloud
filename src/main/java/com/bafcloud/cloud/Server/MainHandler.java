@@ -1,5 +1,6 @@
 package com.bafcloud.cloud.Server;
 
+import com.bafcloud.cloud.Server.Services.AuthorizationService;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -15,17 +16,17 @@ import java.util.List;
 public class MainHandler extends ChannelInboundHandlerAdapter {
 
     private static final List<Channel> channels = new ArrayList<>();
-    private final String rootClient;
+    private final String root;
 
     private final ActionController actionController;
     private long uploadFileSize;
-    private long capacityClient;
+    private long capacityClient; //rework
     private boolean uploadFlag = false;
     private String msgSend;
 
-    public MainHandler(String rootClient) {
-        actionController = new ActionController(rootClient);
-        this.rootClient = rootClient;
+    public MainHandler(AuthorizationService authorizationService, String root) {
+        actionController = new ActionController(authorizationService, root);
+        this.root = root;
     }
 
     @Override
@@ -51,6 +52,9 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
             String cmd = parts[0];
 
             switch (cmd) {
+                case ("auth"):
+                    msgSend = actionController.authorization(parts);
+                    break;
                 case ("list"):
                     msgSend = actionController.list(parts[1]);
                     break;
@@ -61,9 +65,8 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                     msgSend = actionController.upload(parts);
                     break;
                 case ("waitingSend"):
-                    capacityClient += Long.parseLong(parts[1]);
                     uploadFlag = true;
-                    msgSend = "waitingGet";
+                    msgSend = actionController.checkCapacity(parts[1]);
                     break;
                 default:
                     msgSend = "unknown";

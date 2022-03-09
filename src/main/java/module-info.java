@@ -18,6 +18,8 @@ module com.bafcloud.cloud {
     requires lombok;
     requires org.slf4j;
     requires io.netty.buffer;
+    requires java.sql;
+    requires sqlite.jdbc;
 
 
     opens com.bafcloud.cloud to javafx.fxml;
