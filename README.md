@@ -1,5 +1,5 @@
 # CloudStorage
-<h2>In the pipeline</h2>
+<h2>Status: In the pipeline</h2>
 
 commands:
  - command auth
