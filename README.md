@@ -1,10 +1,14 @@
 # CloudStorage
-<h2>In process</h2>
+<h2>In the pipeline</h2>
 
 commands:
+ - command auth
  - command list
  - command mkdir
  - command upload
 
-
-actual branch - New_feature_branch_#3
+ - authorization;
+ - database connection sql_lite;
+ 
+ 
+actual branch - Master
